@@ -1,0 +1,6 @@
+__*
+.env
+.vscode
+saves
+
+dist
