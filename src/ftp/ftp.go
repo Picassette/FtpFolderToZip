@@ -87,7 +87,7 @@ func (client *FtpClient) downloadFile(fileName string) error {
 	// Create path from ftp path
 	ftpFilePath := client.savePathToFtpPath(fileName)
 
-	// Create absolut path for local file
+	// Create absolute path for local file
 	fullLocalPath := filepath.FromSlash(fmt.Sprintf("%s/%s", client.TmpFolder, ftpFilePath))
 	common.PrintMsg(fmt.Sprintf("trying to download file : %s to %s", fileName, fullLocalPath), "info")
 
@@ -122,7 +122,7 @@ func (client *FtpClient) downloadFolder(folderName string) error {
 	// Create path from ftp path
 	cleanForLocalFolderName := client.savePathToFtpPath(folderName)
 
-	// Create absolut path for local folder
+	// Create path for local folder
 	localFolderName := filepath.FromSlash(fmt.Sprintf("%s/%s", client.TmpFolder, cleanForLocalFolderName))
 	common.PrintMsg(fmt.Sprintf("trying to create folder : %s", localFolderName), "info")
 

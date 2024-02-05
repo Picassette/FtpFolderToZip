@@ -47,14 +47,14 @@ func (client *ZipClient) CreateZip() error {
 }
 
 /*
-*	Convert Tmp Folder path from Absolut to Relative
+*	Convert Tmp Folder path from Absolute to Relative
  */
-func (client *ZipClient) absolutToRelativePath(absolut string) (string, error) {
-	index := strings.Index(absolut, client.TmpFolder)
+func (client *ZipClient) absoluteToRelativePath(absolute string) (string, error) {
+	index := strings.Index(absolute, client.TmpFolder)
 	if index == -1 {
-		return absolut, nil
+		return absolute, nil
 	}
-	ret := absolut[index+client.TmpFolderPathLen:]
+	ret := absolute[index+client.TmpFolderPathLen:]
 	if len(ret) == 0 {
 		// Unless, we have an empty string
 		ret = filepath.FromSlash("/")
@@ -69,7 +69,7 @@ func (client *ZipClient) walker(path string, info os.FileInfo, err error) error 
 	if err != nil {
 		return fmt.Errorf("error in walker : %s", err.Error())
 	}
-	relativePath, err := client.absolutToRelativePath(path)
+	relativePath, err := client.absoluteToRelativePath(path)
 	if err != nil {
 		return fmt.Errorf("error in walker : %s", err.Error())
 	}
