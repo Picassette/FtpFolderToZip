@@ -4,10 +4,13 @@ import (
 	"archive/zip"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/Picassette/FtpFolderToZip/common"
 )
 
 type ZipClient struct {
@@ -38,7 +41,7 @@ func (client *ZipClient) CreateZip() error {
 	defer client.ZipWriter.Close()
 
 	// Process Tmp files into Zip File
-	err = filepath.Walk(client.TmpFolder, client.walker)
+	err = filepath.WalkDir(client.TmpFolder, client.walker)
 	if err != nil {
 		panic(err)
 	}
@@ -47,35 +50,44 @@ func (client *ZipClient) CreateZip() error {
 }
 
 /*
-*	Convert Tmp Folder path from Absolute to Relative
+*	Convert Tmp Folder path to path inside zip
  */
-func (client *ZipClient) absoluteToRelativePath(absolute string) (string, error) {
+func (client *ZipClient) pathToInsideZipPath(absolute string) (string, error) {
+	// Get temp folder index in absolute path
 	index := strings.Index(absolute, client.TmpFolder)
 	if index == -1 {
 		return absolute, nil
 	}
-	ret := absolute[index+client.TmpFolderPathLen:]
-	if len(ret) == 0 {
-		// Unless, we have an empty string
-		ret = filepath.FromSlash("/")
+
+	// Remove Tmp folder path and convert to the right slash format
+	ret := filepath.ToSlash(absolute[index+client.TmpFolderPathLen:])
+
+	// If first char is '/', removing it
+	if ret[0] == '/' {
+		ret = ret[1:]
 	}
+
 	return ret, nil
 }
 
 /*
 *	File to Zip processing
  */
-func (client *ZipClient) walker(path string, info os.FileInfo, err error) error {
+func (client *ZipClient) walker(path string, dir fs.DirEntry, err error) error {
 	if err != nil {
 		return fmt.Errorf("error in walker : %s", err.Error())
 	}
-	relativePath, err := client.absoluteToRelativePath(path)
-	if err != nil {
-		return fmt.Errorf("error in walker : %s", err.Error())
-	}
-	if info.IsDir() {
+	if dir.IsDir() {
 		return nil
 	}
+
+	relativePath, err := client.pathToInsideZipPath(path)
+	if err != nil {
+		return fmt.Errorf("error in walker : %s", err.Error())
+	}
+	relativePath = filepath.ToSlash(relativePath)
+
+	common.PrintMsg(fmt.Sprintf("add %s file to %s path inside zip", path, relativePath), "debug")
 
 	// We copy file content
 	file, err := os.Open(path)
